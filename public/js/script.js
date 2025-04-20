@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
         smsGroup.classList.remove('disabled-field');
     });
 
-    // Form submission
+    //form submission
     const automationForm = document.getElementById('automationForm');
     const submitBtn = document.getElementById('submitBtn');
     
@@ -91,22 +91,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validate form
         if (!document.getElementById('websiteUrl').checkValidity()) {
-            alert('Please enter a valid HTTPS website URL');
+            showError('Please enter a valid HTTPS website URL');
             return;
         }
         
         if (!excelFileInput.files.length) {
-            alert('Please upload an Excel file');
+            showError('Please upload an Excel file');
             return;
         }
         
         if (!scheduleTime.value) {
-            alert('Please select a schedule time');
+            showError('Please select a schedule time');
             return;
         }
         
         if (smsYes.checked && !document.getElementById('phoneNumber').checkValidity()) {
-            alert('Please enter a valid 10-digit Indian phone number');
+            showError('Please enter a valid 10-digit Indian phone number');
             return;
         }
         
@@ -133,22 +133,75 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const result = await response.json();
             
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to start automation');
+            }
+            
             if (result.success) {
-                alert('Automation started successfully!');
+                showSuccess(`Automation started successfully! ${result.postCount} posts will be processed.`);
                 // Reset form after successful submission
                 automationForm.reset();
                 fileInfo.classList.add('d-none');
                 phoneNumberGroup.classList.add('d-none');
             } else {
-                throw new Error(result.message || 'Failed to start automation');
+                throw new Error(result.message);
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error: ' + error.message);
+            showError(error.message);
         } finally {
             // Reset button state
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-play me-2"></i>START AUTOMATION';
         }
     });
+    //helper functions for showing messages
+    function showError(message){
+        const alertDiv = Document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissable fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        //remove any existing alerts
+        const existingAlert = document.querySelector('.alert');
+        if(existingAlert){
+            existingAlert.remove();
+        }
+
+        //insert alert before the form
+        automationForm.parentNode.insertBefore(alertDiv, automationForm);
+    }
+
+    function showSuccess(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Remove any existing alerts
+        const existingAlert = document.querySelector('.alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        
+        // Insert alert before the form
+        automationForm.parentNode.insertBefore(alertDiv, automationForm);
+    }
+});
+
+//Add FAQ Link to the navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const nav = document.querySelector('.nav');
+    const faqLink = document.createElement('li');
+    faqLink.className = 'nav-item';
+    faqLink.innerHTML = `
+        <a class="nav-link" href="/faq"><i class="fas fa-question-circle me-2"></i>FAQ</a>
+    `;
+    nav.appendChild(faqqLink);
 });
